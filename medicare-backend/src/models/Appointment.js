@@ -28,6 +28,10 @@ const AppointmentSchema = new mongoose.Schema(
     notes: {
       type: String,
     },
+    availabilitySlot: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Availability",
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

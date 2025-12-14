@@ -14,6 +14,7 @@ app.use("/api/patients", require("./routes/patient.routes"));
 app.use("/api/appointments", require("./routes/appointment.routes"));
 app.use("/api/packages", require("./routes/package.routes"));
 app.use("/api/bills", require("./routes/billing.routes"));
+app.use("/api/availability", require("./routes/availability.routes"));
 
 
 const PORT = process.env.PORT || 5000;
