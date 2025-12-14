@@ -3,6 +3,7 @@ const {
   register,
   login,
   forgotPassword,
+  resetPassword,
 } = require("../controllers/auth.controller");
 const auth = require("../middleware/auth.middleware");
 const role = require("../middleware/role.middleware");
@@ -14,6 +15,7 @@ router.get("/me", auth, (req, res) => {
 router.post("/register", register);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 // ONLY ADMIN & DOCTOR
 router.get("/secure-data", auth, role("ADMIN", "DOCTOR"), (req, res) => {
