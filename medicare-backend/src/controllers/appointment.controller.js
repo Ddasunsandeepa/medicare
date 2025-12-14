@@ -1,40 +1,30 @@
 const Appointment = require("../models/Appointment");
 
 // CREATE appointment (with double-booking check)
+const Availability = require("../models/Availability");
+
 exports.createAppointment = async (req, res) => {
-  try {
-    const { patient, doctor, appointmentDate, timeSlot } = req.body;
+  const { patient, availabilitySlot } = req.body;
 
-    if (!patient || !doctor || !appointmentDate || !timeSlot) {
-      return res.status(400).json({ msg: "All fields are required" });
-    }
-
-    // Prevent double booking
-    const existing = await Appointment.findOne({
-      doctor,
-      appointmentDate,
-      timeSlot,
-      status: "BOOKED",
-    });
-
-    if (existing) {
-      return res
-        .status(400)
-        .json({ msg: "Doctor already booked for this time slot" });
-    }
-
-    const appointment = await Appointment.create({
-      patient,
-      doctor,
-      appointmentDate,
-      timeSlot,
-      createdBy: req.user.id,
-    });
-
-    res.status(201).json(appointment);
-  } catch (error) {
-    res.status(500).json({ msg: "Failed to create appointment" });
+  const slot = await Availability.findById(availabilitySlot);
+  if (!slot || slot.isBooked) {
+    return res.status(400).json({ msg: "Slot not available" });
   }
+
+  const appointment = await Appointment.create({
+    patient,
+    doctor: slot.doctor,
+    appointmentDate: slot.date,
+    timeSlot: slot.timeSlot,
+    availabilitySlot,
+    createdBy: req.user.id,
+  });
+
+  // Mark slot as booked
+  slot.isBooked = true;
+  await slot.save();
+
+  res.status(201).json(appointment);
 };
 
 // GET all appointments

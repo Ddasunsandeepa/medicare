@@ -69,3 +69,51 @@ exports.login = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+const crypto = require("crypto");
+
+exports.forgotPassword = async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return res.status(404).json({ msg: "User not found" });
+
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 mins
+
+  await user.save();
+
+  console.log(
+    `🔑 Reset link: http://localhost:5173/reset-password/${resetToken}`
+  );
+
+  res.json({ msg: "Password reset link sent (mock)" });
+};
+
+exports.resetPassword = async (req, res) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ msg: "Invalid or expired token" });
+  }
+
+  user.password = await bcrypt.hash(req.body.password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.json({ msg: "Password reset successful" });
+};
