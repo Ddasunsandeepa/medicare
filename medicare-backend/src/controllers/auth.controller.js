@@ -69,3 +69,22 @@ exports.login = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ msg: "User not found" });
+  }
+
+  // Simple reset token (mock)
+  const resetToken = Math.random().toString(36).substring(2, 10);
+
+  // MOCK EMAIL
+  console.log(`🔑 Password reset token for ${email}: ${resetToken}`);
+
+  res.json({
+    msg: "Password reset instructions sent to email (mock)",
+  });
+};

@@ -1,0 +1,22 @@
+.dashboard {
+  min-height: 100vh;
+  background: #f2f4f8;
+  padding: 30px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 8px;
+}
+
+.logout-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}

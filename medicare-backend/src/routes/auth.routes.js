@@ -1,5 +1,9 @@
 const router = require("express").Router();
-const { register, login } = require("../controllers/auth.controller");
+const {
+  register,
+  login,
+  forgotPassword,
+} = require("../controllers/auth.controller");
 const auth = require("../middleware/auth.middleware");
 const role = require("../middleware/role.middleware");
 
@@ -9,6 +13,7 @@ router.get("/me", auth, (req, res) => {
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
 
 // ONLY ADMIN & DOCTOR
 router.get("/secure-data", auth, role("ADMIN", "DOCTOR"), (req, res) => {
