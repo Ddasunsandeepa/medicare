@@ -6,6 +6,10 @@ import PrivateRoute from "./utils/PrivateRoute";
 import ForgotPassword from "./auth/ForgotPassword";
 import ResetPassword from "./auth/ResetPassword";
 import CreateUser from "./pages/CreateUser";
+import Patients from "./pages/Patients";
+import MyAppointments from "./pages/MyAppointments";
+import Appointments from "./pages/Appointments";
+import Billing from "./pages/Billing";
 
 export default function App() {
   return (
@@ -30,6 +34,39 @@ export default function App() {
           element={
             <PrivateRoute>
               <CreateUser />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/patients"
+          element={
+            <PrivateRoute>
+              <Patients />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/appointments"
+          element={
+            <PrivateRoute>
+              <Appointments />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/my-appointments"
+          element={
+            <PrivateRoute>
+              <MyAppointments />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/billing"
+          element={
+            <PrivateRoute>
+              <Billing />
             </PrivateRoute>
           }
         />

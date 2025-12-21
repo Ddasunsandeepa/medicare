@@ -20,3 +20,69 @@
   border-radius: 5px;
   cursor: pointer;
 }
+.menu-block {
+  margin-top: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.menu-block h4 {
+  margin-bottom: 8px;
+}
+
+.menu-block a {
+  display: block;
+  margin-bottom: 6px;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.menu-block a:hover {
+  text-decoration: underline;
+}
+.dashboard-card input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.dashboard-card button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dashboard-card button:hover {
+  background: #1e4ed8;
+}
+table {
+  border-collapse: collapse;
+}
+
+th {
+  background: #f3f4f6;
+}
+
+td,
+th {
+  text-align: left;
+}
+
+td button {
+  padding: 5px 10px;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #2563eb;
+}
+
+td button:hover {
+  opacity: 0.9;
+}
