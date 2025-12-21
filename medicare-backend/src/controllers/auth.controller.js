@@ -117,3 +117,32 @@ exports.resetPassword = async (req, res) => {
 
   res.json({ msg: "Password reset successful" });
 };
+
+exports.createUser = async (req, res) => {
+  const creatorRole = req.user.role;
+  const { name, email, password, role } = req.body;
+
+  const roleRules = {
+    SUPER_ADMIN: ["ADMIN", "STAFF", "DOCTOR", "PATIENT"],
+    ADMIN: ["STAFF", "DOCTOR"],
+    STAFF: ["PATIENT"],
+  };
+
+  // Check permission
+  if (!roleRules[creatorRole]?.includes(role)) {
+    return res.status(403).json({
+      msg: "You are not allowed to create this user role",
+    });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role,
+  });
+
+  res.json({ msg: `${role} account created successfully` });
+};
