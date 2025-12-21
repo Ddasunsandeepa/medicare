@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["ADMIN", "STAFF", "DOCTOR", "PATIENT"],
+      enum: ["SUPER_ADMIN", "ADMIN", "STAFF", "DOCTOR", "PATIENT"],
       default: "PATIENT",
       resetPasswordToken: String,
       resetPasswordExpire: Date,
