@@ -23,14 +23,43 @@ export default function MyAppointments() {
       <div className="dashboard-card">
         <h2>My Appointments</h2>
 
-        <ul>
-          {appointments.map((a) => (
-            <li key={a._id}>
-              {a.patient?.fullName} on{" "}
-              {new Date(a.appointmentDate).toLocaleDateString()} ({a.timeSlot})
-            </li>
-          ))}
-        </ul>
+        <table width="100%" border="1" cellPadding="6">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((a) => (
+              <tr key={a._id}>
+                <td>{a.patient?.fullName}</td>
+                <td>{new Date(a.appointmentDate).toLocaleDateString()}</td>
+                <td>{a.timeSlot}</td>
+                <td>
+                  {a.status === "CANCELLED" ? (
+                    <span style={{ color: "red", fontWeight: "bold" }}>
+                      CANCELLED
+                    </span>
+                  ) : (
+                    <span style={{ color: "green", fontWeight: "bold" }}>
+                      BOOKED
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {appointments.length === 0 && (
+              <tr>
+                <td colSpan="4" align="center">
+                  No appointments found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

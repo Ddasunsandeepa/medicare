@@ -6,6 +6,12 @@ const controller = require("../controllers/availability.controller");
 // Doctor only
 router.post("/", auth, role("DOCTOR"), controller.addAvailability);
 
+// Update availability
+router.put("/:id", auth, role("DOCTOR"), controller.updateAvailability);
+
+// Delete availability
+router.delete("/:id", auth, role("DOCTOR"), controller.deleteAvailability);
+
 // Doctor view own availability
 router.get("/me", auth, role("DOCTOR"), async (req, res) => {
   const slots = await require("../models/Availability").find({

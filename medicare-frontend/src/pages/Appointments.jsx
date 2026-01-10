@@ -3,103 +3,95 @@ import api from "../api/axios";
 import "../styles/dashboard.css";
 
 export default function Appointments() {
-  const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+
   const [form, setForm] = useState({
     patient: "",
     doctor: "",
-    appointmentDate: "",
-    timeSlot: "",
+    availabilitySlot: "",
   });
-  const [editingId, setEditingId] = useState(null);
 
-  const loadData = async () => {
-    try {
-      const [a, p, d] = await Promise.all([
-        api.get("/appointments"),
-        api.get("/patients"),
-        api.get("/auth/users?role=DOCTOR"),
-      ]);
-      setAppointments(a.data);
-      setPatients(p.data);
-      setDoctors(d.data);
-    } catch (err) {
-      console.error("Reload failed", err);
-    }
+  const loadInitialData = async () => {
+    const [p, d, a] = await Promise.all([
+      api.get("/patients"),
+      api.get("/auth/users?role=DOCTOR"),
+      api.get("/appointments"),
+    ]);
+    setPatients(p.data);
+    setDoctors(d.data);
+    setAppointments(a.data);
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
-        const [a, p, d] = await Promise.all([
-          api.get("/appointments"),
+        const [p, d, a] = await Promise.all([
           api.get("/patients"),
           api.get("/auth/users?role=DOCTOR"),
+          api.get("/appointments"),
         ]);
 
-        setAppointments(a.data);
         setPatients(p.data);
         setDoctors(d.data);
+        setAppointments(a.data);
       } catch (err) {
-        console.error("Failed to load data", err);
+        console.error("Failed to load initial data", err);
       }
     };
 
-    fetchData();
+    fetchInitialData();
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // Load availability when doctor changes
+  const loadSlots = async (doctorId) => {
+    if (!doctorId) return;
+    const res = await api.get(`/availability/${doctorId}`);
+    setSlots(res.data);
   };
 
-  const resetForm = () => {
-    setForm({
-      patient: "",
-      doctor: "",
-      appointmentDate: "",
-      timeSlot: "",
-    });
-    setEditingId(null);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    if (name === "doctor") {
+      setForm((prev) => ({
+        ...prev,
+        doctor: value,
+        availabilitySlot: "",
+      }));
+      loadSlots(value);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingId) {
-      await api.put(`/appointments/${editingId}`, form);
-    } else {
-      await api.post("/appointments", form);
-    }
+    try {
+      await api.post("/appointments", {
+        patient: form.patient,
+        availabilitySlot: form.availabilitySlot,
+      });
 
-    resetForm();
-    loadData();
-  };
-
-  const handleEdit = (a) => {
-    setEditingId(a._id);
-    setForm({
-      patient: a.patient?._id || "",
-      doctor: a.doctor?._id || "",
-      appointmentDate: a.appointmentDate?.substring(0, 10),
-      timeSlot: a.timeSlot || "",
-    });
-  };
-
-  const handleCancel = async (id) => {
-    if (window.confirm("Cancel this appointment?")) {
-      await api.patch(`/appointments/${id}/cancel`);
-      loadData();
+      alert("Appointment booked successfully");
+      setForm({ patient: "", doctor: "", availabilitySlot: "" });
+      setSlots([]);
+      loadInitialData();
+    } catch (err) {
+      alert(err.response?.data?.msg || "Booking failed");
     }
   };
 
   return (
     <div className="dashboard">
       <div className="dashboard-card">
-        <h2>Appointment Management</h2>
+        <h2>Book Appointment</h2>
 
-        {/* Add / Edit Form */}
+        {/* BOOK FORM */}
         <form onSubmit={handleSubmit}>
+          {/* Patient */}
           <select
             name="patient"
             value={form.patient}
@@ -114,6 +106,7 @@ export default function Appointments() {
             ))}
           </select>
 
+          {/* Doctor */}
           <select
             name="doctor"
             value={form.doctor}
@@ -128,40 +121,35 @@ export default function Appointments() {
             ))}
           </select>
 
-          <input
-            type="date"
-            name="appointmentDate"
-            value={form.appointmentDate}
+          {/* Availability Slots */}
+          <select
+            name="availabilitySlot"
+            value={form.availabilitySlot}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Select Available Slot</option>
+            {slots.map((s) => {
+              const isPast = new Date(s.date) < new Date().setHours(0, 0, 0, 0);
+              return (
+                <option
+                  key={s._id}
+                  value={s._id}
+                  disabled={s.isBooked || isPast}
+                >
+                  {new Date(s.date).toLocaleDateString()} – {s.timeSlot}
+                  {s.isBooked ? " (Booked)" : isPast ? " (Past)" : ""}
+                </option>
+              );
+            })}
+          </select>
 
-          <input
-            name="timeSlot"
-            placeholder="Time Slot (e.g. 09:00 - 09:30)"
-            value={form.timeSlot}
-            onChange={handleChange}
-            required
-          />
-
-          <button type="submit">
-            {editingId ? "Update Appointment" : "Book Appointment"}
-          </button>
-
-          {editingId && (
-            <button
-              type="button"
-              style={{ marginLeft: "10px", background: "#6b7280" }}
-              onClick={resetForm}
-            >
-              Cancel Edit
-            </button>
-          )}
+          <button type="submit">Book Appointment</button>
         </form>
 
         <hr style={{ margin: "20px 0" }} />
 
-        {/* Appointment List */}
+        {/* APPOINTMENT LIST */}
         <h3>Appointments</h3>
         <table width="100%" border="1" cellPadding="6">
           <thead>
@@ -183,18 +171,35 @@ export default function Appointments() {
                 <td>{a.timeSlot}</td>
                 <td>{a.status}</td>
                 <td>
-                  <button onClick={() => handleEdit(a)}>Edit</button>{" "}
                   {a.status === "BOOKED" && (
-                    <button
-                      style={{ background: "#dc2626", marginLeft: "5px" }}
-                      onClick={() => handleCancel(a._id)}
-                    >
-                      Cancel
-                    </button>
+                    <>
+                      <button
+                        style={{ background: "#dc2626", marginRight: "5px" }}
+                        onClick={async () => {
+                          if (window.confirm("Cancel this appointment?")) {
+                            await api.patch(`/appointments/${a._id}/cancel`);
+                            loadInitialData();
+                          }
+                        }}
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        style={{ background: "blue", color: "white" }}
+                        onClick={async () => {
+                          await api.patch(`/appointments/${a._id}/complete`);
+                          loadInitialData();
+                        }}
+                      >
+                        Complete
+                      </button>
+                    </>
                   )}
                 </td>
               </tr>
             ))}
+
             {appointments.length === 0 && (
               <tr>
                 <td colSpan="6" align="center">

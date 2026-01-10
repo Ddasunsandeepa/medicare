@@ -7,5 +7,8 @@ router.use(auth);
 
 router.post("/", role("ADMIN", "STAFF"), controller.generateBill);
 router.get("/", role("ADMIN", "STAFF"), controller.getBills);
+router.get("/summary", role("ADMIN"), controller.getIncomeSummary);
+router.patch("/:id/pay", role("ADMIN", "STAFF"), controller.markAsPaid);
+
 
 module.exports = router;

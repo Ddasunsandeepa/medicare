@@ -11,6 +11,7 @@ import MyAppointments from "./pages/MyAppointments";
 import Appointments from "./pages/Appointments";
 import Billing from "./pages/Billing";
 import DoctorAvailability from "./pages/DoctorAvailability";
+import Packages from "./pages/Packages";
 
 export default function App() {
   return (
@@ -75,6 +76,15 @@ export default function App() {
           element={
             <PrivateRoute>
               <DoctorAvailability />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/packages"
+          element={
+            <PrivateRoute>
+              <Packages />
             </PrivateRoute>
           }
         />

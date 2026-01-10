@@ -8,6 +8,8 @@ const discountMap = {
   PLATINUM: 0.15,
 };
 
+const PatientPackage = require("../models/PatientPackage");
+
 exports.generateBill = async (req, res) => {
   try {
     const { patient, packageId, membership } = req.body;
@@ -21,6 +23,7 @@ exports.generateBill = async (req, res) => {
     const tax = taxableAmount * 0.08;
     const totalAmount = taxableAmount + tax;
 
+    // Create bill
     const bill = await Bill.create({
       patient,
       package: packageId,
@@ -30,10 +33,18 @@ exports.generateBill = async (req, res) => {
       tax,
       totalAmount,
       createdBy: req.user.id,
+      status: "UNPAID",
+    });
+
+    // Assign package to patient
+    await PatientPackage.create({
+      patient,
+      package: packageId,
+      remainingSessions: pkg.sessions,
     });
 
     res.status(201).json(bill);
-  } catch {
+  } catch (err) {
     res.status(500).json({ msg: "Failed to generate bill" });
   }
 };
@@ -47,5 +58,37 @@ exports.getBills = async (req, res) => {
     res.json(bills);
   } catch {
     res.status(500).json({ msg: "Failed to fetch bills" });
+  }
+};
+
+exports.getIncomeSummary = async (req, res) => {
+  const summary = await Bill.aggregate([
+    {
+      $group: {
+        _id: "$package",
+        totalIncome: { $sum: "$totalAmount" },
+      },
+    },
+  ]);
+
+  const populated = await Package.populate(summary, {
+    path: "_id",
+    select: "name",
+  });
+
+  res.json(populated);
+};
+
+exports.markAsPaid = async (req, res) => {
+  try {
+    const bill = await Bill.findByIdAndUpdate(
+      req.params.id,
+      { status: "PAID" },
+      { new: true }
+    );
+
+    res.json(bill);
+  } catch {
+    res.status(500).json({ msg: "Failed to update payment status" });
   }
 };

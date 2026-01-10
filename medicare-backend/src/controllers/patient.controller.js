@@ -47,11 +47,35 @@ exports.updatePatient = async (req, res) => {
 };
 
 // Delete patient
+const Appointment = require("../models/Appointment");
+const Availability = require("../models/Availability");
+
 exports.deletePatient = async (req, res) => {
   try {
-    await Patient.findByIdAndDelete(req.params.id);
-    res.json({ msg: "Patient deleted" });
-  } catch {
+    const patientId = req.params.id;
+
+    // Find all appointments of patient
+    const appointments = await Appointment.find({ patient: patientId });
+
+    // Free related availability slots
+    for (const a of appointments) {
+      if (a.availabilitySlot) {
+        const slot = await Availability.findById(a.availabilitySlot);
+        if (slot) {
+          slot.isBooked = false;
+          await slot.save();
+        }
+      }
+    }
+
+    // Delete appointments
+    await Appointment.deleteMany({ patient: patientId });
+
+    // Delete patient
+    await Patient.findByIdAndDelete(patientId);
+
+    res.json({ msg: "Patient and related records deleted" });
+  } catch (err) {
     res.status(500).json({ msg: "Failed to delete patient" });
   }
 };
