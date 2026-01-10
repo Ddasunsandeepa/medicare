@@ -47,6 +47,7 @@ export default function Dashboard() {
         {role === "DOCTOR" && (
           <div className="menu-block">
             <h4>Doctor Menu</h4>
+            <Link to="/availability">Manage Availability</Link>
             <Link to="/my-appointments">My Appointments</Link>
           </div>
         )}

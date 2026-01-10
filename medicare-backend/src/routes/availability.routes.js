@@ -6,6 +6,14 @@ const controller = require("../controllers/availability.controller");
 // Doctor only
 router.post("/", auth, role("DOCTOR"), controller.addAvailability);
 
+// Doctor view own availability
+router.get("/me", auth, role("DOCTOR"), async (req, res) => {
+  const slots = await require("../models/Availability").find({
+    doctor: req.user.id,
+  });
+  res.json(slots);
+});
+
 // Staff/Admin view available slots
 router.get("/:doctorId", auth, role("ADMIN", "STAFF"), async (req, res) => {
   const slots = await require("../models/Availability").find({

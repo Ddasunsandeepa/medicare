@@ -10,13 +10,13 @@ import Patients from "./pages/Patients";
 import MyAppointments from "./pages/MyAppointments";
 import Appointments from "./pages/Appointments";
 import Billing from "./pages/Billing";
+import DoctorAvailability from "./pages/DoctorAvailability";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
@@ -67,6 +67,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <Billing />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/availability"
+          element={
+            <PrivateRoute>
+              <DoctorAvailability />
             </PrivateRoute>
           }
         />

@@ -18,7 +18,7 @@ const AppointmentSchema = new mongoose.Schema(
     },
     timeSlot: {
       type: String,
-      required: true, // e.g. "09:00 - 09:30"
+      required: true, 
     },
     status: {
       type: String,
