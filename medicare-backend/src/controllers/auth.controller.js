@@ -146,3 +146,14 @@ exports.createUser = async (req, res) => {
 
   res.json({ msg: `${role} account created successfully` });
 };
+
+exports.getUsersByRole = async (req, res) => {
+  const { role } = req.query;
+
+  if (!role) {
+    return res.status(400).json({ msg: "Role query is required" });
+  }
+
+  const users = await User.find({ role }).select("_id name email role");
+  res.json(users);
+};

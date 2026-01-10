@@ -10,6 +10,6 @@ router.post("/", controller.createPatient);
 router.get("/", controller.getPatients);
 router.get("/:id", controller.getPatientById);
 router.put("/:id", controller.updatePatient);
-router.delete("/:id", controller.deletePatient);
+router.delete("/:id", auth, role("ADMIN", "STAFF"), controller.deletePatient);
 
 module.exports = router;

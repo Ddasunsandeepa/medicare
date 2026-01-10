@@ -5,6 +5,7 @@ const {
   forgotPassword,
   resetPassword,
   createUser,
+  getUsersByRole,
 } = require("../controllers/auth.controller");
 const auth = require("../middleware/auth.middleware");
 const role = require("../middleware/role.middleware");
@@ -26,5 +27,12 @@ router.get("/secure-data", auth, role("ADMIN", "DOCTOR"), (req, res) => {
     role: req.user.role,
   });
 });
+
+router.get(
+  "/users",
+  auth,
+  role("SUPER_ADMIN", "ADMIN", "STAFF"),
+  getUsersByRole
+);
 
 module.exports = router;

@@ -25,6 +25,11 @@ const BillSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    status: {
+      type: String,
+      enum: ["PAID", "UNPAID"],
+      default: "UNPAID",
+    },
   },
   { timestamps: true }
 );

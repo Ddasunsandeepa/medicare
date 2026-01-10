@@ -10,8 +10,16 @@ router.use(auth);
 router.post("/", role("ADMIN", "STAFF"), controller.createAppointment);
 router.get("/", role("ADMIN", "STAFF"), controller.getAppointments);
 
+router.patch(
+  "/:id/complete",
+  auth,
+  role("DOCTOR", "STAFF"),
+  controller.completeAppointment
+);
+
+
 // DOCTOR only
-router.get("/doctor", role("DOCTOR"), controller.getDoctorAppointments);
+router.get("/doctor", auth, role("DOCTOR"), controller.getDoctorAppointments);
 
 // ADMIN / STAFF
 router.put("/:id", role("ADMIN", "STAFF"), controller.updateAppointment);

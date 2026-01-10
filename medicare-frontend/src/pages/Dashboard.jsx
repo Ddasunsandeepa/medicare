@@ -28,6 +28,8 @@ export default function Dashboard() {
             <Link to="/create-user">Create Staff / Doctor</Link>
             <br />
             <Link to="/billing">View Billing</Link>
+            <br />
+            <Link to="/packages">Manage Packages</Link>
           </div>
         )}
 
@@ -40,6 +42,8 @@ export default function Dashboard() {
             <Link to="/appointments">Book Appointments</Link>
             <br />
             <Link to="/billing">Billing & Payments</Link>
+            <br />
+            <Link to="/packages">View Packages</Link>
           </div>
         )}
 
@@ -47,6 +51,7 @@ export default function Dashboard() {
         {role === "DOCTOR" && (
           <div className="menu-block">
             <h4>Doctor Menu</h4>
+            <Link to="/availability">Manage Availability</Link>
             <Link to="/my-appointments">My Appointments</Link>
           </div>
         )}

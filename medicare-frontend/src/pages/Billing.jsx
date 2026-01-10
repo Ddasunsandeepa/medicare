@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 import api from "../api/axios";
 import "../styles/dashboard.css";
 
 export default function Billing() {
   const [patients, setPatients] = useState([]);
+  const [summary, setSummary] = useState([]);
   const [packages, setPackages] = useState([]);
   const [bills, setBills] = useState([]);
   const [form, setForm] = useState({
@@ -14,19 +16,23 @@ export default function Billing() {
 
   const loadData = async () => {
     try {
-      const [pRes, pkgRes, bRes] = await Promise.all([
+      const [pRes, pkgRes, bRes, sRes] = await Promise.all([
         api.get("/patients"),
         api.get("/packages"),
         api.get("/bills"),
+        api.get("/bills/summary"),
       ]);
+
       setPatients(pRes.data);
       setPackages(pkgRes.data);
       setBills(bRes.data);
+      setSummary(sRes.data);
     } catch (err) {
       console.error("Reload failed", err);
     }
   };
-
+  const token = localStorage.getItem("token");
+  const user = token ? jwtDecode(token) : null;
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -124,6 +130,8 @@ export default function Billing() {
               <th>Discount</th>
               <th>Tax</th>
               <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -137,6 +145,26 @@ export default function Billing() {
                 <td>
                   <b>Rs.{b.totalAmount}</b>
                 </td>
+                <td>
+                  {b.status === "PAID" ? (
+                    <span style={{ color: "green" }}>PAID</span>
+                  ) : (
+                    <span style={{ color: "red" }}>UNPAID</span>
+                  )}
+                </td>
+                <td>
+                  {b.status === "UNPAID" && (
+                    <button
+                      onClick={async () => {
+                        await api.patch(`/bills/${b._id}/pay`);
+                        loadData();
+                      }}
+                      style={{ background: "green", color: "white" }}
+                    >
+                      Mark as Paid
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
             {bills.length === 0 && (
@@ -148,6 +176,35 @@ export default function Billing() {
             )}
           </tbody>
         </table>
+
+        {user?.role === "ADMIN" && (
+          <>
+            <h3>Income Summary</h3>
+            <table border="1" width="100%">
+              <thead>
+                <tr>
+                  <th>Package</th>
+                  <th>Total Income (LKR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.map((s) => (
+                  <tr key={s._id._id}>
+                    <td>{s._id.name}</td>
+                    <td>Rs.{s.totalIncome}</td>
+                  </tr>
+                ))}
+                {summary.length === 0 && (
+                  <tr>
+                    <td colSpan="2" align="center">
+                      No income data
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
     </div>
   );
