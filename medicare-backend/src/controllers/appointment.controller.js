@@ -1,39 +1,59 @@
 const Appointment = require("../models/Appointment");
-
+const PatientPackage = require("../models/PatientPackage");
 // CREATE appointment (with double-booking check)
 const Availability = require("../models/Availability");
+const Patient = require("../models/Patient");
+const User = require("../models/User");
+const { sendAppointmentEmail } = require("../utils/email");
 
 exports.createAppointment = async (req, res) => {
-  const { patient, availabilitySlot } = req.body;
+  try {
+    const { patient, availabilitySlot } = req.body;
 
-  const slot = await Availability.findById(availabilitySlot);
-  if (!slot || slot.isBooked) {
-    return res.status(400).json({ msg: "Slot not available" });
+    const patientPackage = await PatientPackage.findOne({
+      patient,
+      remainingSessions: { $gt: 0 },
+    });
+
+    if (!patientPackage) {
+      return res.status(400).json({ msg: "No remaining package sessions" });
+    }
+
+    const slot = await Availability.findById(availabilitySlot);
+    if (!slot || slot.isBooked) {
+      return res.status(400).json({ msg: "Slot not available" });
+    }
+
+    const appointment = await Appointment.create({
+      patient,
+      doctor: slot.doctor,
+      appointmentDate: slot.date,
+      timeSlot: slot.timeSlot,
+      availabilitySlot,
+      createdBy: req.user.id,
+    });
+
+    slot.isBooked = true;
+    await slot.save();
+
+    const patientData = await Patient.findById(patient);
+    const doctorData = await User.findById(slot.doctor);
+
+    if (patientData?.email) {
+      await sendAppointmentEmail({
+        to: patientData.email,
+        name: patientData.fullName,
+        doctor: doctorData?.name || "Assigned Doctor",
+        date: new Date(appointment.appointmentDate).toLocaleDateString(),
+        time: appointment.timeSlot,
+      });
+    }
+
+    res.status(201).json(appointment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to create appointment" });
   }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const slotDate = new Date(slot.date);
-  if (slotDate < today) {
-    return res
-      .status(400)
-      .json({ msg: "Cannot book appointments in the past" });
-  }
-
-  const appointment = await Appointment.create({
-    patient,
-    doctor: slot.doctor,
-    appointmentDate: slot.date,
-    timeSlot: slot.timeSlot,
-    availabilitySlot,
-    createdBy: req.user.id,
-  });
-
-  slot.isBooked = true;
-  await slot.save();
-
-  res.status(201).json(appointment);
 };
 
 // GET all appointments
@@ -103,22 +123,24 @@ exports.cancelAppointment = async (req, res) => {
   }
 };
 
-const PatientPackage = require("../models/PatientPackage");
-
 exports.completeAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ msg: "Not found" });
 
+    if (appointment.status === "COMPLETED") {
+      return res.status(400).json({ msg: "Already completed" });
+    }
+
     appointment.status = "COMPLETED";
     await appointment.save();
 
-    // Deduct session
     const patientPackage = await PatientPackage.findOne({
       patient: appointment.patient,
+      remainingSessions: { $gt: 0 },
     });
 
-    if (patientPackage && patientPackage.remainingSessions > 0) {
+    if (patientPackage) {
       patientPackage.remainingSessions -= 1;
       await patientPackage.save();
     }

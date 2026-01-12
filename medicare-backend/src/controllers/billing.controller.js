@@ -1,5 +1,7 @@
 const Bill = require("../models/Bill");
 const Package = require("../models/Package");
+const Patient = require("../models/Patient");
+const { sendPaymentEmail } = require("../utils/email");
 
 const discountMap = {
   NONE: 0,
@@ -89,6 +91,40 @@ exports.markAsPaid = async (req, res) => {
 
     res.json(bill);
   } catch {
+    res.status(500).json({ msg: "Failed to update payment status" });
+  }
+};
+
+exports.markAsPaid = async (req, res) => {
+  try {
+    const bill = await Bill.findById(req.params.id)
+      .populate("patient", "fullName email")
+      .populate("package", "name");
+
+    if (!bill) {
+      return res.status(404).json({ msg: "Bill not found" });
+    }
+
+    if (bill.status === "PAID") {
+      return res.json({ msg: "Already paid" });
+    }
+
+    bill.status = "PAID";
+    await bill.save();
+
+    // Send email
+    if (bill.patient?.email) {
+      await sendPaymentEmail({
+        to: bill.patient.email,
+        name: bill.patient.fullName,
+        packageName: bill.package.name,
+        amount: bill.totalAmount,
+      });
+    }
+
+    res.json(bill);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Failed to update payment status" });
   }
 };
