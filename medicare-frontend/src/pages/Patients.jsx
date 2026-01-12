@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import "../styles/dashboard.css";
+import { Link } from "react-router-dom";
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -138,6 +139,7 @@ export default function Patients() {
               <th>Name</th>
               <th>Phone</th>
               <th>Actions</th>
+              <th>Profile</th>
             </tr>
           </thead>
           <tbody>
@@ -153,6 +155,9 @@ export default function Patients() {
                   >
                     Delete
                   </button>
+                </td>
+                <td>
+                  <Link to={`/patientProfile/${p._id}`}>View Profile</Link>
                 </td>
               </tr>
             ))}

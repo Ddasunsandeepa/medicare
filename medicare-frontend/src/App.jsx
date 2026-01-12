@@ -12,6 +12,7 @@ import Appointments from "./pages/Appointments";
 import Billing from "./pages/Billing";
 import DoctorAvailability from "./pages/DoctorAvailability";
 import Packages from "./pages/Packages";
+import PatientProfile from "./pages/PatientProfile";
 
 export default function App() {
   return (
@@ -85,6 +86,15 @@ export default function App() {
           element={
             <PrivateRoute>
               <Packages />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/patientProfile/:patientId"
+          element={
+            <PrivateRoute>
+              <PatientProfile />
             </PrivateRoute>
           }
         />
