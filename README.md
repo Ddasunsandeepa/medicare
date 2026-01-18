@@ -1,4 +1,4 @@
-# MWN Healthcare Management System
+# MWN-Healthcare Management System
 
 ## Project Overview
 The MWN Healthcare Management System is a web-based application developed as part of the **CSE3722 – Rapid Application Development** module.  
